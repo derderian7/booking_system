@@ -1,0 +1,16 @@
+.cate-image{
+    width: 70px;
+    height: 70px;
+}
+.form-select{
+    display: block;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    background-color: white;
+    background-repeat: no-repeat;
+    border: 1px solid white;
+    background-position: right .75rem center;
+    border-radius: .25rem;
+    appearance: none;
+}
