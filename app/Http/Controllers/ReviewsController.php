@@ -2,67 +2,50 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Review;
+use App\Models\Reviews;
+use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class ReviewsController extends Controller
 {
     public function index()
     {
-        $reviews = Review::paginate(10);
-        return response()->json($reviews);
-    }
-
-    public function business_review($id)
-    {
-        $reviews = Review::where('business_id',$id)->paginate(10);
-        return response()->json($reviews);
+        $reviews= Reviews::with('user')->paginate(10);
+        return response()->json(['result'=>$reviews,'error'=>null],200);
     }
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'review' => 'required',
-            'stars' => 'required',
+        try{
+            $validator = Validator::make($request->all(), [
+            'user_id'=>'required',
+            'review'=>'required',
+            'stars'=>'required',
             'business_id'=>'required'
         ]);
         if($validator->fails()){
             return response()->json($validator->errors()->toJson(), 400);
         }
-        $review = new Review();
-        $review->review = $request->review;
-        $review->stars = $request->stars;
-        $review->business_id = $request->business_id;
-        $review->user_id = Auth::id();
+        $review = New Reviews();
+        $review->user_id= $request->user_id;
+        $review->review= $request->review;
+        $review->stars= $request->stars;
+        $review->business_id= $request->business_id;
         $review->save();
-        return response()->json('review is added');
+        return response()->json(['result'=>['message'=>'Review is added'],'error'=>null],200);
+        }catch(Exception $e){
+            return response()->json(['result'=>null,'error'=>$e],500);
+        }
     }
 
-    public function update($id, Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'review' => 'required',
-            'stars' => 'required',
-            'business_id'=>'required'
-        ]);
-        if($validator->fails()){
-            return response()->json($validator->errors()->toJson(), 400);
-        }
-        $review = Review::findOrFail($id);
-        $review->review = $request->review;
-        $review->stars = $request->stars;
-        $review->business_id = $request->business_id;
-        $review->user_id = Auth::id();
-        $review->save();
-        return response()->json('review is updated');
-    }
-    
     public function destroy($id)
     {
-        $review = Review::findOrFail($id);
+        $review=Reviews::find($id);
+        if($review){
         $review->delete();
-        return response()->json('review is deleted');
+        return response()->json(['result'=>['message'=>'Review is deleted']],200);
+        }else         
+        return response()->json(['result'=>null,'error'=>'Review does not exist'],200);
     }
 }
